@@ -11,10 +11,10 @@ A lightweight uptime monitoring service built with Node.js. It pings a list of t
 
 ## Tech Stack
 
-*HTML
-*CSS
-*JavaScript/React
-*PostgreSQL
+* HTML
+* CSS
+* JavaScript/React
+* PostgreSQL
 
 
 ## License
