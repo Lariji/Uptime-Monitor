@@ -19,33 +19,46 @@ async function testDbConnection(){
 testDbConnection();
 
 
-const websites = [
-    "https://www.google.com/",
-    "https://www.mdlmdlmdl.co/",
-    "https://httpbin.org/status/500"];
-
-async function tryWebsite(website){
+async function tryWebsite(id,website){
+    let isUp = false;
     try{
         const response = await fetch(website);
 
         if(response.ok){
             console.log(`${website} is up`);
+            isUp = true;
         }
         else{
             console.log(`${website} is down`);
+            isUp = false;
         }
     }
     catch(error){
         console.log(`${website} might not exist, check again`);
+        isUp = false;
+    }
+    try{
+        const queryText = 'INSERT INTO ping_results (website_id, is_up) VALUES ($1, $2)';
+        const values = [id,isUp];
+
+        await pool.query(queryText,values);
+        console.log('Saved resuls for ${website}.')
+
+    }catch(dbError){
+        console.error('Failed to save ping result for ${website}',dbErrpr)
     }
 }
 
-function runMonitor(){
+async function runMonitor(){
     console.log("pinging")
-    for (const website of websites){
-    tryWebsite(website);
+    try{
+    const result = await pool.query('SELECT id,url FROM websites')
+    for (const website of result.rows){
+    tryWebsite(website.id,website.url);
+    }}
+    catch(err){
+        console.error("Failed to fetch websites:",err)
     }
 }
 
-runMonitor();
-setInterval(runMonitor,60000)
+setInterval(runMonitor,30000)
