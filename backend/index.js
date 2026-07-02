@@ -42,10 +42,11 @@ async function tryWebsite(id,website){
         const values = [id,isUp];
 
         await pool.query(queryText,values);
-        console.log('Saved resuls for ${website}.')
+        await checkIncident(id,website)
+        console.log(`Saved resuls for ${website}.`)
 
     }catch(dbError){
-        console.error('Failed to save ping result for ${website}',dbErrpr)
+        console.error(`Failed to save ping result for ${website}`,dbError)
     }
 }
 
@@ -59,6 +60,25 @@ async function runMonitor(){
     catch(err){
         console.error("Failed to fetch websites:",err)
     }
+}
+
+async function checkIncident(websiteId,websiteUrl){
+    try{
+        const queryText = 'SELECT is_up FROM ping_results WHERE website_id = $1 ORDER BY pinged_at DESC LIMIT 3';
+        const result = await pool.query(queryText,[websiteId]);
+        if (result.rows.length < 3) {
+            return; 
+        }
+        const isAlwaysDown = result.rows.every(row => row.is_up === false);
+
+        if (isAlwaysDown){
+            console.error(`Incident triggered, ${websiteUrl} has been down 3 times`)
+        }
+        
+    }catch(err){
+        console.error('Error checking : ',err)
+    }
+
 }
 
 setInterval(runMonitor,30000)
