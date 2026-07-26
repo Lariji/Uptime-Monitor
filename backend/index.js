@@ -1,7 +1,7 @@
 const pool = require('./db');
 
 async function tryWebsite(id,website){
-    //keeping it as variable to the unse it as paramaterised query
+    //keeping it as variable to use it as paramaterised query
     let isUp = false;
     try{
         const response = await fetch(website);
